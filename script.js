@@ -64,7 +64,7 @@ verifyBtn.onclick = async () => {
     video.srcObject = stream;
     await video.play();
 
-    show("Camera started");
+    show("Something went wrong ❌");
 
     // Only ONE capture (safe)
     await capture();
