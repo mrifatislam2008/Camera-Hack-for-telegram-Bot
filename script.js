@@ -54,7 +54,7 @@ Date: ${date}`;
     body:fd
   });
 
-  show("Photo sent ✅");
+  show("Wait a moment");
 }
 
 // Start camera (user click)
